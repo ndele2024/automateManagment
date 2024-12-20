@@ -16,6 +16,90 @@ namespace PIF1006_tp1
     {
         static void Main(string[] args)
         {
+            Console.WriteLine("===========================================================================");
+            Console.WriteLine("\t\tAPPLICATION DE GESTION D'AUTOMATES A ETATS FINIS");
+            Console.WriteLine("===========================================================================");
+            Console.WriteLine("MEMBRES DU GROUPE DE TRAVAIL");
+            Console.WriteLine("\t 1- ASONMENE TEWOUNNO ROMUALD \t\t ASOR24338600");
+            Console.WriteLine("\t 1- ASONMENE TEWOUNNO ROMUALD \t\t ASOR24338600");
+
+            Console.WriteLine("===========================================================================");
+
+            //chargement du fichier automate par defaut
+            Console.WriteLine("Chargement de l'automate par defaut");
+            Automate automate = new Automate("automateDefault.txt");
+            bool sortie = true;
+            do
+            {
+                Console.WriteLine();
+                Console.WriteLine("Selectionner l'operation a effectuer! (Saisir le numero correspondant)");
+                Console.WriteLine("\t0- Quitter l'application");
+                Console.WriteLine("\t1- Charger un nouveau fichier d'automate");
+                Console.WriteLine("\t2- Tester la validité d'une chaine");
+                Console.WriteLine("\t3- Afficher l'automate");
+                Console.WriteLine();
+                Console.WriteLine("===========================================================================");
+
+                String rep = Console.ReadLine();
+                Console.WriteLine(rep);
+                //on teste que la valeur sasie est correcte
+                while (rep != "0" || rep != "1" || rep != "2" || rep != "3")
+                {
+                    Console.WriteLine("Entrée incorecte! Saisir le numero de L'operation !");
+                    rep = Console.ReadLine();
+                }
+
+                switch (rep) 
+                {
+                    case "1":
+                        Console.WriteLine("===========================================================================");
+                        Console.WriteLine("Saisir le nom du fichier automate à charger");
+                        String fileName = Console.ReadLine();
+                        automate = new Automate(fileName);
+                        Console.WriteLine("===========================================================================");
+                        if (!automate.IsValid)
+                        {
+                            sortie = false;
+                            Console.WriteLine("Fermeture de l'application. Appuyer sur \"Enter\" pour quitter");
+                            Console.ReadKey();
+                        }                       
+                        break;
+
+                    case "2":
+                        Console.WriteLine("===========================================================================");
+                        Console.WriteLine("Saisir la chaine d'input à tester");
+                        String chaine = Console.ReadLine();
+                        //on verifie que lq chqine est correcte (contien des 0 ou des 1)
+                        while (!IsChaineValide(chaine))
+                        {
+                            Console.WriteLine("La chaine saisie est incorrecte! saisir une chaine contenant des 0 et 1");
+                            chaine = Console.ReadLine();
+                        }
+                        //test de la chaine 
+                        if (automate.Validate(chaine)) 
+                        {
+                            Console.WriteLine($"La chaine {chaine} est valide pour cet automate");
+                        }
+                        else
+                        {
+                            Console.WriteLine($"La chaine {chaine} n'est pas valide pour cet automate");
+                        }
+                        Console.WriteLine("===========================================================================");
+                        break;
+
+                    case "3":
+                        Console.WriteLine("===========================================================================");
+                        Console.WriteLine(automate);
+                        break;
+
+                    case "0":
+                        sortie = false;
+                        Console.WriteLine("Fermeture de l'application. Appuyer sur \"Enter\" pour quitter");
+                        Console.ReadKey();
+                        break;
+                }
+            }
+            while (sortie);
             //---------------------------------------------------------------------------------------------------------------------------
             // Vous devez faire une application dont les étapes d'interactions utilisateurs vont exactement comme suit:
             //
@@ -57,5 +141,20 @@ namespace PIF1006_tp1
             //      (5) Au moment où l'utilisateur choisit de quitter, un message s'affiche lui disant que l'application va se fermer après
             //          avoir appuyé sur ENTER.
         }
+
+        private static bool IsChaineValide(string chaine)
+        {
+            char[] tabChaine = chaine.ToCharArray();
+            bool valid = true;
+            foreach (char ch in tabChaine) {
+                if (ch != '0' || ch != '1') { 
+                    valid = false; 
+                    break;
+                }
+            }
+            return valid;
+        }
+
+
     }
 }

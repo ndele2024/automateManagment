@@ -25,7 +25,28 @@ namespace PIF1006_tp1
 
         public override string ToString()
         {
-            return base.ToString(); // Modifier ce code pour retourner une représentation plus cohérente d'un état et de ses transitions vers d'autres états
+            StringBuilder sb = new StringBuilder();
+            if (IsFinal)
+            {
+                sb.Append($"({Name})");
+            }
+            else 
+            {
+                sb.Append(Name);
+            }
+            sb.Append("\n");
+            foreach (var transition in Transitions)
+            {
+                sb.Append("\t");
+                sb.Append(transition.ToString() + "\n");
+            }
+            return sb.ToString();
+        }
+
+        public override bool Equals(object obj)
+        {
+            State st = obj as State;
+            return Name.Equals(st.Name);
         }
     }
 }
