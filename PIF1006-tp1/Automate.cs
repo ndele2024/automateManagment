@@ -33,6 +33,7 @@ namespace PIF1006_tp1
             //string cheminFichier = "automate.txt"; 
             try {
                 foreach (string ligne in File.ReadLines(filePath)) {
+                    //if(ligne != "")
                     String[] tabLigne = ligne.Trim().Split(' ');
                     if (tabLigne.Length == 4)
                     {
@@ -62,32 +63,37 @@ namespace PIF1006_tp1
                                     State s = States[indexStateSource];
                                     s.Transitions.Add(new Transition(input, States[indexStateDestination]));
                                     States[indexStateSource] = s;
-                                
+                                    //mise a jour de l'initial state
+                                    if (InitialState!=null && s.Name == InitialState.Name)
+                                    {
+                                        InitialState.Transitions.Add(new Transition(input, States[indexStateDestination]));
+                                    }
+
                                 }
                                 else
                                 {
                                     //IsValid = false;
-                                    dictRejet.Add("l'input de cette transition est incorect! saisir 0 ou 1", ligne);
+                                    dictRejet.Add($"l'input de cette transition {tabLigne[1]}-{tabLigne[2]}->{tabLigne[3]} est incorect! saisir 0 ou 1", ligne);
                                 }
 
                             }
                             else
                             {
                                 //IsValid = false;
-                                dictRejet.Add("cette transition fait reference a un etat inexistant", ligne);
+                                dictRejet.Add($"La transition {tabLigne[1]}-{tabLigne[2]}->{tabLigne[3]} fait reference a un etat inexistant", ligne);
                             }
                         }
                         else
                         {
                             //IsValid = false;
-                            dictRejet.Add("vous devez indiquer si la ligne est un state ou une transition", ligne);
+                            dictRejet.Add($"La ligne {ligne} doit commencer par state ou transition", ligne);
                             //continue;
                         }
                     }
                     else
                     {
                         //IsValid = false;
-                        dictRejet.Add("le nombre de parametre de la ligne n'est pas correct", ligne);
+                        dictRejet.Add($"le nombre de parametre de la ligne {ligne}  n'est pas correct", ligne);
                         //continue;
                     }
 
@@ -101,7 +107,7 @@ namespace PIF1006_tp1
             if(dictRejet.Count > 0)
             {
                 Console.WriteLine("Lignes rejetés :");
-                Console.WriteLine("numero \t\t Raison du rejet");
+                Console.WriteLine("Ligne \t\t\t Raison du rejet");
                 foreach (var item in dictRejet.Keys)
                 {
                     Console.WriteLine($"{dictRejet[item]} \t {item}");
@@ -147,39 +153,6 @@ namespace PIF1006_tp1
                 }
             }
 
-
-
-            // Vous devez pouvoir charger à partir d'un fichier quelconque.  Cela peut être un fichier XML, JSON, texte, binaire, ...
-            // P.ex. avec un fichier texte, vous pouvoir balayer ligne par ligne et interprété en séparant chaque ligne en un tableau de strings
-            // dont le premier représente l'action, et la suite les arguments. L'équivalent de l'automate décrit manuellement dans la classe
-            // Program pourrait être:
-            //  state s0 1 1
-            //  state s1 0 0
-            //  state s2 0 0
-            //  state s3 1 0
-            //  transition s0 0 s1
-            //  transition s0 1 s0
-            //  transition s1 0 s1
-            //  transition s1 1 s2
-            //  transition s2 0 s1
-            //  transition s3 1 s3
-            //
-            // Dans une boucle, on prend les lignes une par une:
-            //   - Si le 1er terme est "state", on prend les arguments et on crée un état du même nom
-            //     et on l'ajoute à une liste d'état; les 2 et 3e argument représentent alors si c'est un état final, puis si c'est l'état initial
-            //   - Si c'est "transition" on cherche dans la liste d'état l'état qui a le nom en 1er argument et on ajoute la transition avec les 2 autres
-            //     arguments à sa liste
-            // 
-            // Considérez que:
-            //   - S'il y a d'autres termes, les lignes pourraient être ignorées;
-            //   - Si l'état n'est pas trouvé dans la liste (p.ex. l'état est référencé mais n'existe pas (encore)), la transition est ignorée
-            //   - Après lecture du fichier:
-            //          - si l'automate du fichier n'est pas déterministe (vous devrez penser à comment vérifier cela -> l'état et la transition
-            //            en défaut doit être indiquée à l'utilisateur), OU
-            //          - si l'automate n'a aucun état, ou aucun état initial
-            //     l'automate est considéré comme "invalide" (la propriété IsValid doit alors valoir faux)
-            //   - Lorsque des lignes (ou l'automate) sont ignorées ou à la fin l'automate rejeté, cela doit être indiqué à l'utilisateur
-            //     à la console avec la ligne/raison du "rejet".
         }
 
         private void AfficheEtatDefaut(List<State> states)
@@ -216,13 +189,16 @@ namespace PIF1006_tp1
                 List<Transition> transitions = new List<Transition>();
                 transitions = state.Transitions;
                 //on recupère le premier input et l'etat de destination
-                char input = transitions[0].Input;
-                State st = transitions[0].TransiteTo;
-                for (int i = 1; i < transitions.Count; i++)
+                if (transitions.Count > 0)
                 {
-                    if ((input == transitions[i].Input) && (st != transitions[i].TransiteTo)) //deux input identiques le state est non deterministe
+                    char input = transitions[0].Input;
+                    State st = transitions[0].TransiteTo;
+                    for (int i = 1; i < transitions.Count; i++)
                     {
-                        states.Add(state);
+                        if ((input == transitions[i].Input) && (st != transitions[i].TransiteTo)) //deux input identiques le state est non deterministe
+                        {
+                            states.Add(state);
+                        }
                     }
                 }
             }
@@ -248,7 +224,7 @@ namespace PIF1006_tp1
                         //transition trouvé
                         trouver = true;
                         CurrentState = t.TransiteTo;
-                        Console.WriteLine($"Transite to {t.TransiteTo}");
+                        Console.WriteLine($"Transite to {t.TransiteTo.Name}");
                         break;
                     }
                 }
@@ -263,17 +239,14 @@ namespace PIF1006_tp1
             //on teste à la fin si on est sur un etat final
             if (!CurrentState.IsFinal)
             {
+                Console.WriteLine($"{CurrentState.Name} n'est pas un etat final");
                 isValid = false;
             }
-            // L'automate doit maintenant à jour son "CurrentState" en suivant les transitions et en respectant l'input.
-            // Considérez que l'automate est déterministe et que même si dans les faits on aurait pu mettre plusieurs
-            // transitions possibles pour un état et un input donné, le 1er trouvé dans la liste est le chemin emprunté.
-            // Si aucune transition n'est trouvé pour un état courant et l'input donné, cela doit retourner faux;
-            // Si tous les caractères ont été pris en compte, on vérifie si l'état courant est final ou non et on retourne
-            // vrai ou faux selon.
-
-            // VOUS DEVEZ OBLIGATOIREMENT AFFICHER la suite des états actuel, input lu, et état transité pour qu'on puisse
-            // suivre le déroulement de l'analyse.
+            else
+            {
+                if (isValid)
+                    Console.WriteLine($"{CurrentState.Name} est un etat final");
+            }
 
             return isValid;
         }
@@ -287,19 +260,26 @@ namespace PIF1006_tp1
 
         public override string ToString()
         {
-            // Vous devez modifier cette partie de sorte à retourner un équivalent string qui décrit tous les états et
-            // la table de transitions de l'automate.
             Reset();
             //initialisation d'un Stringbuilder
             StringBuilder builder = new StringBuilder();
             //affichage du state initial
             builder.Append("\t");
-            builder.Append($"[({InitialState.Name})]\n");
+            if (InitialState.IsFinal)
+            {
+                builder.Append($"[({InitialState.Name})]\n");
+            }
+            else
+            {
+                builder.Append($"[{InitialState.Name}]\n");
+            }
+            
             foreach (var transition in InitialState.Transitions)
             {
                 builder.Append("\t");
                 builder.Append(transition.ToString()+"\n");
             }
+            builder.Append("\n");
             //affichage des autres etats de l'automate
             foreach (var state in States)
             {
